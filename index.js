@@ -2,6 +2,7 @@ const { Client } = require("discord.js-selfbot-v13");
 require("dotenv").config();
 
 const client = new Client();
+let eventCount = 0;
 
 const envVariables = [
   "GUILD_ID",
@@ -25,6 +26,22 @@ client.on("ready", async () => {
   console.log(`Logged in as ${client.user.username}`);
   const guild = await client.guilds.fetch(process.env.GUILD_ID);
 
+  async function createEvent() {
+    await guild.scheduledEvents.create({
+      name,
+      privacyLevel: 2,
+      entityType: 3,
+      scheduledStartTime,
+      scheduledEndTime,
+      entityMetadata: {
+        location,
+      },
+    });
+
+    eventCount++;
+    console.log("Created event", `[${eventCount}]`);
+  }
+
   // Modify the line below to customize event names
   const name = process.env.EVENT_NAME;
   const location = process.env.EVENT_LOCATION;
@@ -33,19 +50,7 @@ client.on("ready", async () => {
   const scheduledEndTime = new Date(process.env.EVENT_END_TIME * 1000);
 
   const promises = [];
-  for (let i = 0; i < count; i++)
-    promises.push(
-      guild.scheduledEvents.create({
-        name,
-        privacyLevel: 2,
-        entityType: 3,
-        scheduledStartTime,
-        scheduledEndTime,
-        entityMetadata: {
-          location,
-        },
-      })
-    );
+  for (let i = 0; i < count; i++) promises.push(createEvent());
 
   await Promise.all(promises);
   console.log(`Created ${count} events`);
